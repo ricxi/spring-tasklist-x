@@ -23,8 +23,10 @@ public class TaskService {
 
     // I need to write a custom exception
     // to account for cases where the task was not found
-    public Task getTask(Long taskId) {
-        return taskRepository.findById(taskId).orElseThrow();
+    public Task getTask(Long taskId) throws TaskNotFoundException {
+        return taskRepository
+                .findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("task with id " + taskId + " not found"));
     }
 
     // I don't think I need to make a custom exception
@@ -37,17 +39,22 @@ public class TaskService {
     // delete task
     // there needs to be validation in case the task does not exist
     // will this throw an error if the id is not found anyways?
-    public void deleteTask(Long taskId) {
+    public void deleteTask(Long taskId) throws TaskNotFoundException {
+        if(!taskRepository.existsById(taskId)) {
+            throw new TaskNotFoundException("invalid id: cannot delete task");
+        }
+
+
         taskRepository.deleteById(taskId);
     }
 
     @Transactional
     // I can't privide an empty field when creating a subject
     // but I can provide one that has an empty string
-    public Task updateTask(Task taskData) {
+    public Task updateTask(Task taskData) throws TaskNotFoundException {
         Task task = taskRepository
-        .findById(taskData.getId())
-        .orElseThrow(() -> new IllegalStateException("todo not found"));
+                        .findById(taskData.getId())
+                        .orElseThrow(() -> new TaskNotFoundException("task with id " + taskData.getId() + " not found"));
     
         String subject = taskData.getSubject();
         String details = taskData.getDetails();
@@ -68,6 +75,7 @@ public class TaskService {
         }
         
         // ! BUG: the field is set to false, when the "complete" field is missing in the JSON body
+        // ! I think this is related to the default field in the Task entity
         if (Objects.nonNull(complete) 
             && !Objects.equals(task.getComplete(), complete)
             ) {

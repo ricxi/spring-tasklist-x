@@ -29,7 +29,7 @@ public class TaskController {
     }
 
     @GetMapping(path = "/{taskId}")
-    public Task getTask(@PathVariable(name  = "taskId") Long taskId) {
+    public Task getTask(@PathVariable(name  = "taskId") Long taskId) throws TaskNotFoundException {
         return taskService.getTask(taskId);
     }
 
@@ -39,12 +39,12 @@ public class TaskController {
     }
 
     @DeleteMapping(path = "/{taskId}")
-    public void deleteTask(@PathVariable(name = "taskId") Long taskId) {
+    public void deleteTask(@PathVariable(name = "taskId") Long taskId) throws TaskNotFoundException {
         taskService.deleteTask(taskId);
     }
     
     @PutMapping
-    public Task updateTask(@RequestBody Task taskData) {
+    public Task updateTask(@RequestBody Task taskData) throws TaskNotFoundException {
         return taskService.updateTask(taskData);
     }
 }
